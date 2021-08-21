@@ -65,7 +65,7 @@ def hierarchical_avg_max(sentence, mask, window_size):
     while original_length < len(mask) and mask[original_length]:                                 
         original_length += 1
 
-    original_window = original_length-window_size+1                                       #Cümlenin orijinal boyutu ve window_size ile kaç ayrı token grubu elde edeceğimizi hesaplıyoruz
+    original_window = original_length-window_size+1                                #Cümlenin orijinal boyutu ve window_size ile kaç ayrı token grubu elde edeceğimizi hesaplıyoruz
                                                                                               
     if original_window > 2:                                                               #Token grubu sayısı 2'den fazla olacaksa işlemi olduğu gibi uyguluyoruz.
         sentence = torch.reshape(sentence, (sentence.shape[0], 1, sentence.shape[1]))     
@@ -82,9 +82,9 @@ def hierarchical_avg_max(sentence, mask, window_size):
 
         sentence_embeddings = torch.reshape(torch.max(windows[1:original_window-1], 0, True)[0], (1, sentence.shape[-1]))  #Orijinal token gruplarımız arasında maksimum alıyoruz.
     else:
-        sentence_embeddings = torch.mean(sentence[1:original_length-1], 0, True)         #Token grubu sayısı <= 2 olacaksa ilk ve son token dışındaki tokenların ortalamasını alıyoruz sadece.
-                                                                                         #Çünkü bu durumda ilk ve son token'ın bulunmadığı bir grup elde edemiyoruz. İlk ve son token arasındaki tokenları
-    return sentence_embeddings                                                           #bir grup sayarsak, sadece bir grubumuz olduğundan gruplar arasında maksimum olanı elde etmiş oluyoruz zaten.
+        sentence_embeddings = torch.mean(sentence[1:original_length-1], 0, True)  #Token grubu sayısı <= 2 olacaksa ilk ve son token'ın bulunmadığı bir grup elde edemediğimizden
+                                                                                  #ilk ve son dışındaki tokenları bir grup sayıp sadece ortalamasını alıyoruz.
+    return sentence_embeddings                                                    #Sadece bir grubumuz olduğundan gruplar arasında maksimum olanı elde etmiş oluyoruz zaten.
 
 
 

@@ -23,7 +23,6 @@ tokenizer = AutoTokenizer.from_pretrained("dbmdz/bert-base-turkish-cased")      
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], max_length = 256, padding = "max_length", truncation = True)
-
 tokenized_datasets = raw_datasets.map(tokenize_function, batched = True)
 
 from torch.utils.data import DataLoader

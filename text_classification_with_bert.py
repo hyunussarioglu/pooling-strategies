@@ -29,7 +29,7 @@ from torch.utils.data import DataLoader
 tokenized_datasets = tokenized_datasets.remove_columns(["text"])
 tokenized_datasets = tokenized_datasets.rename_column("label", "labels")
 tokenized_datasets.set_format("torch")
-train_dataset = tokenized_datasets["train"].shuffle(seed = 42)
+train_dataset = tokenized_datasets["train"].shuffle(seed = 42)                  #Veri setini rastgele karıştırıyoruz
 eval_dataset = tokenized_datasets["test"].shuffle(seed = 42)
 train_dataloader = DataLoader(train_dataset, shuffle = True, batch_size = 8)    #Verimizi istediğimiz boyutta batch'ler haline getiriyoruz.
 eval_dataloader = DataLoader(eval_dataset, batch_size = 8)

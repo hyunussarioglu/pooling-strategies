@@ -11,19 +11,24 @@ Original file is located at
 !pip install tokenizers
 !pip install transformers
 
+
 from google.colab import drive         
 drive.mount("/content/drive")        #Colab'in Google Drive'ınızdaki dosyalarınıza erişebilmesini sağlıyor.
+
 
 from datasets import load_dataset
 raw_datasets = load_dataset("csv", data_files = {"train": "/content/drive/MyDrive/Colab Notebooks/train_news.csv",
                                                   "test": "/content/drive/MyDrive/Colab Notebooks/test_news.csv"})
 
+
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("dbmdz/bert-base-turkish-cased")      #BERT'in Türkçe için olan Tokenizer'ı.
+
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], max_length = 256, padding = "max_length", truncation = True)
 tokenized_datasets = raw_datasets.map(tokenize_function, batched = True)
+
 
 from torch.utils.data import DataLoader
 tokenized_datasets = tokenized_datasets.remove_columns(["text"])
@@ -33,6 +38,9 @@ train_dataset = tokenized_datasets["train"].shuffle(seed = 42)                  
 eval_dataset = tokenized_datasets["test"].shuffle(seed = 42)
 train_dataloader = DataLoader(train_dataset, shuffle = True, batch_size = 8)    #Verimizi istediğimiz boyutta batch'ler haline getiriyoruz.
 eval_dataloader = DataLoader(eval_dataset, batch_size = 8)
+
+
+
 
 def average(batch, attention_mask):
     original_length = 0
@@ -48,6 +56,9 @@ def average(batch, attention_mask):
         sentence_embeddings = torch.cat((sentence_embeddings, torch.mean(batch[i][1:original_length], 0, True)), 0)   #Her cümle için üstteki 2 işlemi yapıp birleştiriyoruz.
 
     return sentence_embeddings
+
+
+
 
 def hierarchical_avg_max(sentence, mask, window_size):
     original_length = 0
@@ -75,6 +86,9 @@ def hierarchical_avg_max(sentence, mask, window_size):
                                                                                          #Çünkü bu durumda ilk ve son token'ın bulunmadığı bir grup elde edemiyoruz. İlk ve son token arasındaki tokenları
     return sentence_embeddings                                                           #bir grup sayarsak, sadece bir grubumuz olduğundan gruplar arasında maksimum olanı elde etmiş oluyoruz zaten.
 
+
+
+
 def hierarchical_max_avg(sentence, mask, window_size):                            #Hierarchical_avg_max ile tamamen aynı mantıkta çalışıyor.
     original_length = 0                                                           #Yalnızca ortalama ve maksimum alma sıraları farklı.
     while original_length < len(mask) and mask[original_length]:
@@ -101,6 +115,9 @@ def hierarchical_max_avg(sentence, mask, window_size):                          
 
     return sentence_embeddings
 
+
+
+
 def hierarchical(batch, attention_mask, primary = "avg", window_size = 2):                    #Genel hierarchical fonksiyonu (tüm batch için çalışır)
     if prio == "avg":
         hierarchical_prio = hierarchical_avg_max                                              #Öncelikli işlem (primary) "avg" ise çağıracağımız fonksiyon hierarchical_avg_max(bir cümle için çalışır)
@@ -113,10 +130,12 @@ def hierarchical(batch, attention_mask, primary = "avg", window_size = 2):      
 
     return sentence_embeddings
 
+
+
+
 import torch.nn as nn
 from transformers import BertModel
 import torch
-
 class BertClassifier(nn.Module):
     def __init__(self, pretrained:str, freeze_bert = False, num_classes = 2, pooling_strategy = "cls", pooling_output_layer = -1, hierarchical_window_size = 2):
         super(BertClassifier, self).__init__()
@@ -148,22 +167,31 @@ class BertClassifier(nn.Module):
         logits = self.classifier(sentence_embeddings.to(device))                         #Pooling işlemi sonuçlarını sınıflandırma katmanına veriyoruz
         return logits
 
+    
+    
+    
 model = BertClassifier("dbmdz/bert-base-turkish-cased", num_classes = 13, pooling_strategy = "hierarchical_avg_max", pooling_output_layer = -2, hierarchical_window_size = 3)
 
 loss_fn = nn.CrossEntropyLoss()                     #Loss fonksiyonu
 
+
 from transformers import AdamW                     
 optimizer = AdamW(model.parameters(), lr = 5e-5)    #AdamW optimizer
+
 
 from transformers import get_scheduler
 num_epochs = 2                                                         #epoch -> Veri setini bir kere baştan sona gitmek. Tavsiye edilen epoch sayısı (2-3-4)
 num_training_steps = num_epochs * len(train_dataloader)
 lr_scheduler = get_scheduler("linear", optimizer = optimizer, num_warmup_steps = 0, num_training_steps = num_training_steps)
 
+
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")      #Daha hızlı çalışmak için cihazımızı Colab'in sağladığı GPU olarak ayarlıyoruz.
 model.to(device)                                                                         #Ve modeli GPU'ya taşıyoruz.
 
-from tqdm.auto import tqdm
+
+
+
+from tqdm.auto import tqdm                                            #TRAIN VE TEST BLOKLARI
 import numpy as np
 import time
 

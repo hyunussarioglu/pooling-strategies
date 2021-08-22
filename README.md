@@ -1,4 +1,4 @@
-# pooling-strategies
+# About This Repository
 
 BERT ile Türkçe Metin Sınıflandırma ve Pooling Stratejileri
 

@@ -1,6 +1,4 @@
 # pooling-strategies-on-bert-output
-BERT ile Türkçe Metin Sınıflandırma ve Pooling Stratejileri
+Turkish text classification using BERT output with different pooling strategies.
 
-Kullandığım veri kümelerine http://www.kemik.yildiz.edu.tr/veri_kumelerimiz.html adresinden ulaşabilirsiniz.
-
-Pooling stratejileri için yazdığım kodlar optimize edilmeye oldukça açıktır. Lütfen yaptığınız geliştirmeler için benimle iletişime geçin.
+You can access the datasets from http://www.kemik.yildiz.edu.tr/veri_kumelerimiz.html
